@@ -1,4 +1,4 @@
-###################################################################
+###################################################################\
 Read live data from CMS50D+ finger oximeter\
 Store values and post alarm accessible over LAN\
 ###################################################################
@@ -16,9 +16,9 @@ sudo apt-get install python-dateutil python-serial  # python dependencies
 Usage:\
        BreatheIn.py [-h] [-a ALARM_MIN_SPO2] [-d DEVICE] [-c COMMANDFILE_PATH]\
                     [-o]\
-optional arguments:\
-  -h, --help            show this help message and exit\
-  -a ALARM_MIN_SPO2, --alarm_min_SpO2 ALARM_MIN_SPO2\
+*optional arguments:\
+*  -h, --help            show this help message and exit\
+*  -a ALARM_MIN_SPO2, --alarm_min_SpO2 ALARM_MIN_SPO2\
                         Alarm SpO2 minimal level\
   -d DEVICE, --device DEVICE\
                         Path to device. Default: /dev/ttyUSB0\
