@@ -9,7 +9,7 @@ Upon a predefined (-a option) SpO2 level a json file (comando.json) is stored in
 Can be easily adapted to include other data/actions.
 
 Setup:\
-(linux; other OS please google)\
+(ubuntu; other OS please google)\
 sudo usermod -a -G dialout $USER # then logout and in again. This gives user access to /def/ttyUSBx via dialout group\
 sudo apt-get install python-dateutil python-serial  # python dependencies
 
