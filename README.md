@@ -1,7 +1,7 @@
-#==================================================
+================================================== \
 Read live data from CMS50D+ finger oximeter\
 Store values and post alarm accessible over LAN\
-#==================================================
+==================================================
 
 This program reads live data from a CMS50D+ oximeter and stores in disk at every heartbeat the SpO2% and hearth rate as displayed by the oximeter, the time from the last heart beat, max, min and average of the pulse waveform for the last heartbeat and the same for a related signal that is output but I'm not sure what it means.
 
