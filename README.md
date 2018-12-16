@@ -9,7 +9,7 @@ Can be easily adapted to include other data/actions.
 # ----------------------------------
 Setup:\
 (ubuntu; other OS please google)\
-sudo usermod -a -G dialout $USER # then log out and in again. This gives user access to /def/ttyUSBx via dialout group\
+sudo usermod -a -G dialout $USER # then log out and in again. This gives user access to /dev/ttyUSBx via dialout group\
 sudo apt-get install python-dateutil python-serial  # python dependencies
 
 Usage:\
