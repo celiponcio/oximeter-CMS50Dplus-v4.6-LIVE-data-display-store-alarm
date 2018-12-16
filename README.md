@@ -14,27 +14,19 @@ sudo usermod -a -G dialout $USER # then logout and in again. This gives user acc
 sudo apt-get install python-dateutil python-serial  # python dependencies
 
 Usage:\
-       BreatheIn.py [-h] [-a ALARM_MIN_SPO2] [-d DEVICE] [-c COMMANDFILE_PATH]\
-                    [-o]\
-*optional arguments:\
-*  -h, --help            show this help message and exit\
-*  -a ALARM_MIN_SPO2, --alarm_min_SpO2 ALARM_MIN_SPO2\
-                        Alarm SpO2 minimal level\
-  -d DEVICE, --device DEVICE\
-                        Path to device. Default: /dev/ttyUSB0\
-  -c COMMANDFILE_PATH, --commandfile_path COMMANDFILE_PATH\
-                        Command file path. Default=current folder\
-  -o, --output          Store data on current folder
+./BreatheIn.py 
+Use -h option to display help\
+Reasonable defaults are assumed if called without arguments.\
 
 Launcher:\
-BreatheIn.sh\
+./BreatheIn.sh\
 This launches Python's SimpleHTTPServer to serve the alarm file on /tmp\
 Passes optional args for BreatheIn.py\
 Tested in Ubuntu 18.04, Lubuntu 12.04. Should be subtly altered for for other OS.
 
 Viewer:\
 BreatheIn.m\
-Matlab R2012a. May work in Octave, but untested.\
+Matlab R2012a script. May work in Octave, but untested.\
 Sample data is provided.
 
 # ----------------------------------\
