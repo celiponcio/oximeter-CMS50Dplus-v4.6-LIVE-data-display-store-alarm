@@ -5,7 +5,7 @@ Store values and post alarm accessible over LAN\
 
 This program reads live data from a CMS50D+ oximeter and stores in disk at every heartbeat the SpO2% and hearth rate as displayed by the oximeter, the time from the last heart beat, max, min and average of the pulse waveform for the last heartbeat and the same for a related signal that is output but I'm not sure what it means.
 
-Upon a predefined SpO2 level a json file (comando.json) is stored in a designated folder. This can be readout over web by an external web app to raise an alarm. E.g.: in a browser http://IPofRunningPC:8000/comando.json \
+Upon a predefined (-a option) SpO2 level a json file (comando.json) is stored in a designated folder. This can be readout over web by an external web app to raise an alarm. E.g.: in a browser http://IPofRunningPC:8000/comando.json \
 Can be easily adapted to include other data/actions.
 
 Setup:\
