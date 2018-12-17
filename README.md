@@ -1,10 +1,16 @@
 # Read live data from CMS50D+ finger oximeter
 ## Store values and post alarm accessible over LAN
 
-This program reads live data from a CMS50D+ oximeter and stores in disk at every heartbeat the SpO2% and hearth rate as displayed by the oximeter, the time from the last heartbeat, max, min and average for the last heartbeat of the two pulse waveforms outputed (probably the red and infrared channels).
+This program reads live data from a CMS50D+ oximeter and stores in disk at every heartbeat the SpO2% and hearth rate as displayed by the oximeter, the time from the last heartbeat, max, min and average for the last heartbeat of the two pulse waveforms outputted (probably the red and infrared channels).
 
 Upon a predefined (-a option) SpO2 level a json file (comando.json) is stored in a designated folder. This can be read over web by an external web app to raise an alarm. E.g.: in a browser http://IPofRunningPC:8000/comando.json \
 Can be easily adapted to include other data/actions.
+
+Sensor disconnections/errors are handled gracefully.
+
+Practical tips for long time acquisition:\
+- the battery alarm goes on at a very early stage, after a couple of hours, but it actually lasts up to 8h. Unfortunately this renders the alarm useless after a couple of hours as it will start to report a low battery. This is one of my motivations to write this program. The other is that I wanted a more progressive alarm.
+- turning on the Record option in the oximeter auto shuts-off the display, saving battery.
 
 # ----------------------------------
 Setup:\
@@ -35,4 +41,3 @@ https://github.com/airikka/spo2cms50dplus \
 https://github.com/atbrask/CMS50Dplus
 
 For download of the data stored in the oximeter see\
-https://github.com/airikka/spo2cms50dplus
