@@ -29,6 +29,7 @@ parser.add_argument('-d','--device', type=str, help='path to device', default='/
 parser.add_argument('-c','--commandfile_path', type=str, help='command file path',default='.', required=False)
 #parser.add_argument('-o','--outfile', type=str, help='output file path',default=False, required=False)
 parser.add_argument('-o','--output',action='store_true',default=False)
+
 args = parser.parse_args()
 
 alarm_min_SpO2=args.alarm_min_SpO2
@@ -47,6 +48,7 @@ Nbeats=0; # the number of heartbeats
 ###################
 
 def signal_handler(sig, frame):
+    global ser
     print('You pressed Ctrl+C!')
     do_alarm(0, 0, alarm_pause)  # kill alarm
     ser.close()
@@ -98,8 +100,6 @@ def main_loop(ser):
         if process_raw(raw):
             print("some nonsense\n")
             return
-    ser.close()
-    do_alarm(0, 0, alarm_pause)  # kill alarm
 
 # ------------------------------------------------
 in_heartbeat = False
@@ -240,7 +240,7 @@ def do_alarm(vibrate,beep,pause):
     try:
         f=open(commandfile_path + "/comando.json","w")
         f.write(buf)
-        f.close
+        f.close()
         vibrating = vibrate
     except Exception as ex:
         print(ex)
@@ -255,5 +255,6 @@ configure_serial(ser)
 while 1:
     main_loop(ser)
     ser.close()  # if it exited, some error occured
+    do_alarm(0, 0, alarm_pause)  # kill alarm
     time.sleep(3) # retry in case of error
 
