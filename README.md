@@ -18,7 +18,7 @@ Practical tips for long time acquisition:
 Setup:\
 (ubuntu; other OS please google)\
 sudo usermod -a -G dialout $USER # then log out and in again. This gives user access to /dev/ttyUSBx via dialout group\
-sudo apt-get install python-dateutil python-serial  # python dependencies
+sudo apt-get install python-dateutil python-serial python-matplotlib # python dependencies
 
 Usage:\
 ./BreatheIn.py\
@@ -29,7 +29,7 @@ Launcher:\
 ./BreatheIn.sh\
 This launches Python's SimpleHTTPServer to serve the alarm file on /tmp\
 Passes optional args for BreatheIn.py\
-Tested in Ubuntu 18.04, Lubuntu 12.04. Should be subtly altered for for other OS.
+Tested in Ubuntu 18.04, Lubuntu 12.04. Should be subtly altered for other OS.
 
 Viewer:\
 BreatheIn.m\
