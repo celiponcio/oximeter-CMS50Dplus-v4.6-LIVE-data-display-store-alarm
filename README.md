@@ -3,14 +3,16 @@
 
 This program reads live data from a (easily available and reasonably priced) CMS50D+ oximeter and stores in disk at every heartbeat the SpO2% and hearth rate as displayed by the oximeter, the time from the last heartbeat, max, min and average for the last heartbeat of the two pulse waveforms outputted (probably the red and infrared channels).
 
-Upon a predefined (-a option) SpO2 level a json file (comando.json) is stored in a designated folder. This can be read over web by an external web app to raise an alarm. E.g.: in a browser http://IPofRunningPC:8000/comando.json \
+Upon a predefined (-a option) SpO2 level a json file (comando.json) is stored in a designated folder. This can be read over web by an external web app (not included) to raise an alarm. E.g.: in a browser http://IPofRunningPC:8000/comando.json \
 Can be easily adapted to include other data/actions.
+
+The current readings and SpO2 evolution for the last 2h are plotted.
 
 Sensor disconnections/errors are handled gracefully.
 
 Practical tips for long time acquisition:
-- The battery alarm goes on at a very early stage, after a couple of hours, but it actually lasts up to 8h. Unfortunately this renders the alarm useless after a couple of hours as it will start to report a low battery. This is one of my motivations to write this program. The other is that I wanted a more progressive/smart alarm.
 - Turning on the Record option in the oximeter auto shuts-off the display, saving battery.
+- The battery alarm goes on at a very early stage, after a couple of hours, but it actually lasts at least up to 8h (new NiMh batteries). Unfortunately this renders the alarm useless after a couple of hours as it will start to report a low battery. This is one of my motivations to write this program. The other is that I wanted a more progressive/smart alarm.
 
 # ----------------------------------
 Setup:\
@@ -41,3 +43,5 @@ https://github.com/airikka/spo2cms50dplus \
 https://github.com/atbrask/CMS50Dplus
 
 For download of the data stored in the oximeter see\
+https://github.com/airikka/spo2cms50dplus \
+
