@@ -6,13 +6,7 @@
 # Copyright (c) 2018  celiponcio <celiponcio1@sapo.pt>
 # License: GPLv2
 
-import csv
-import signal
-import sys
-import argparse
-import datetime
-import serial
-import time
+import csv, signal, sys, argparse, datetime, serial, time
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -67,11 +61,22 @@ def configure_serial(ser):
     ser.timeout = 3
     ser.port = device
 
+def new_beat():
+    beat = {'interval': [], 'finger_out': [], 'searching': [], 'ok': [], 'heartbeat': [], 'strange_bits': [],
+        'pulse_waveform': [], 'pulse2_waveform': [], 'pulse_rate': [], 'SpO2': [],
+        'pulse_max':[],'pulse_avg':[],'pulse_min':[], 'pulse2_max':[],'pulse2_avg':[],'pulse2_min':[]}
+    return beat
+
 # ------------------------------------------------
 def main_loop(ser):
+    global beat
+
     sys.stdout.write("Connecting to device...\n")
     sys.stdout.flush()
 
+    try:ser.close()
+    except:pass
+    configure_serial(ser)
     try:
         ser.open()
     except Exception as ex:
@@ -80,6 +85,8 @@ def main_loop(ser):
 
     sys.stdout.write("reading...\n")
     sys.stdout.flush()
+
+    beat=new_beat()
     try:
         ser.write(b'\x7d\x81\xa1\x80\x80\x80\x80\x80\x80')
     except Exception as ex:
@@ -88,8 +95,10 @@ def main_loop(ser):
         return
     while True:
         try:
-            ser.flush()
+            # print ser.in_waiting # check if the readout lags
             raw = ser.read(9)
+            ser.read(9) # the heartbeat marker appears in 2 consecutive frames, so skip one. We don't need so much data.
+            beat["lagging"] = ser.in_waiting
         except Exception as ex:
             print(ex)
             do_alarm(0, 0, alarm_pause)  # kill alarm
@@ -102,18 +111,11 @@ def main_loop(ser):
             return
 
 # ------------------------------------------------
-in_heartbeat = False
 last_beat_time = False
 vibrating=-1
-def new_beat():
-    beat = {'interval': [], 'finger_out': [], 'searching': [], 'ok': [], 'heartbeat': [], 'strange_bits': [],
-        'pulse_waveform': [], 'pulse2_waveform': [], 'pulse_rate': [], 'SpO2': [],
-        'pulse_max':[],'pulse_avg':[],'pulse_min':[], 'something_max':[],'something_avg':[],'something_min':[]}
-    return beat
-beat=new_beat() # contains data for 1 heartbeat
 
 def process_raw(raw):
-    global beat, last_beat_time
+    global beat, last_beat_time, ser
 
     if len(raw) < 9: return True
 
@@ -147,16 +149,12 @@ def process_raw(raw):
         print (beat)
         return True
 
-    # for some reason the heartbeat marker appears in 2 data frames!
-    global in_heartbeat
-    beat["heartbeat"] = beat["heartbeat"] and not in_heartbeat
-    in_heartbeat=beat["heartbeat"]
-    # print beat["finger_out"],beat["searching"],beat["ok"]
     if not beat["ok"] :
         last_beat_time = False
         do_alarm(0,0,alarm_pause) # kill alarm
 
-    if in_heartbeat:
+    if beat["heartbeat"]:
+        ser.reset_input_buffer()  # don't allow readout lag to grow indefinitely
         if not last_beat_time:
             last_beat_time = now
         beat["interval"] = (now - last_beat_time).total_seconds()
@@ -165,6 +163,7 @@ def process_raw(raw):
         beat = new_beat()
         
     return False
+
 # ------------------------------------------------
 def process_beat(beat):
     global Nbeats
@@ -174,10 +173,10 @@ def process_beat(beat):
     beat["pulse_min"] = min(p)
     beat["pulse_avg"] = round(float(sum(p))/len(p),1)
     p = beat["pulse2_waveform"]
-    beat["something_max"] = max(p)
-    beat["something_min"] = min(p)
-    beat["something_avg"] = round(float(sum(p))/len(p),1)
-    print "%.3f"%(beat["interval"]), '\t', beat["SpO2"], beat["pulse_rate"], '\t(', beat["pulse_max"], beat["pulse_avg"], beat["pulse_min"], ')', '\t(',beat["something_max"], beat["something_avg"], beat["something_min"], ')'
+    beat["pulse2_max"] = max(p)
+    beat["pulse2_min"] = min(p)
+    beat["pulse2_avg"] = round(float(sum(p))/len(p),1)
+    print "%.3f"%(beat["interval"]), '\t', beat["SpO2"], beat["pulse_rate"], '\t(', beat["pulse_max"], beat["pulse_avg"], beat["pulse_min"], ')', '\t(',beat["pulse2_max"], beat["pulse2_avg"], beat["pulse2_min"], ')'
     alarm(beat)
     write_beat(beat)
     plot_beat(beat)
@@ -200,23 +199,25 @@ txt = ax.text(0, 90, '0 0', fontdict=font)
 ax.plot([0, SpO2buf.shape[0]],[alarm_min_SpO2,alarm_min_SpO2],'r',linewidth=2.0)
 
 def plot_beat(beat):
-    global line1, txt, SpO2buf, Nbeats
+    global line1, txt, SpO2buf, Nbeats, vibrating
+    txt.set_text('%d%s%d%s%s' % (
+        beat["SpO2"],
+        ' :'[bool(Nbeats % 2)],
+        beat["pulse_rate"],
+        ' *'[bool(vibrating)],
+        ' -'[bool(beat["lagging"])]
+        ))
     SpO2buf=np.roll(SpO2buf,-1)
     SpO2buf[-1]=beat["SpO2"]
     line1.set_ydata(SpO2buf)
-    if bool(Nbeats % 2):
-        b = ' '
-    else:
-        b = ':'
-    txt.set_text('%d%s%d' % (beat["SpO2"],b,beat["pulse_rate"]))
-    plt.draw()
+    plt.draw() # very slow operation
     plt.pause(0.001)
 
 # ------------------------------------------------
 def write_beat(beat):
     if not output or beat["interval"]==0:
         return
-    fieldnames=['interval','SpO2', 'pulse_rate', 'pulse_max', 'pulse_avg', 'pulse_min', 'something_max', 'something_avg', 'something_min']
+    fieldnames=['interval','SpO2', 'pulse_rate', 'pulse_max', 'pulse_avg', 'pulse_min', 'pulse2_max', 'pulse2_avg', 'pulse2_min']
     to_write= { fieldname: beat[fieldname] for fieldname in fieldnames}
     with open(outfile, mode='a') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -251,7 +252,6 @@ def do_alarm(vibrate,beep,pause):
 ################
 signal.signal(signal.SIGINT, signal_handler)
 do_alarm(0,0,alarm_pause) # reset alarm
-configure_serial(ser)
 while 1:
     main_loop(ser)
     ser.close()  # if it exited, some error occured
