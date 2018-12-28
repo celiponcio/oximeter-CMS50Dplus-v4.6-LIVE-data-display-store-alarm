@@ -43,5 +43,5 @@ https://github.com/airikka/spo2cms50dplus \
 https://github.com/atbrask/CMS50Dplus
 
 For download of the data stored in the oximeter see\
-https://github.com/airikka/spo2cms50dplus \
+https://github.com/airikka/spo2cms50dplus
 
