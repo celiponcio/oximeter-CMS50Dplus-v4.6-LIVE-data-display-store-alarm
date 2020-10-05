@@ -2,7 +2,7 @@
 ## Display in real time and sound vibrational alarm on external android smartphone
 ## Bedside-friendly.
 
-This Python app reads live data from a (easily available and reasonably priced) CMS50D+ (or CMS50D-BT) finger oximeter. Displays a real time plot of the oxygen saturation (SpO2) and pulse rate (PR) as well as the present values. Activates an external smartphone vibration if SpO2 descends below an adjustable minimum value. Disconnections/errors are handled gracefully.
+This Python app reads live data from a (easily available and reasonably priced) CMS50D+ __v4.6__ finger oximeter. Displays a real time plot of the oxygen saturation (SpO2) and pulse rate (PR) as well as the present values. Activates an external smartphone vibration if SpO2 descends below an adjustable minimum value. Disconnections/errors are handled gracefully.
 
 This was developed to help with idiopathic central sleep apnea. Obviously, it is provided “as is”, without any implication that it may be useful to anyone’s specific case.
 
