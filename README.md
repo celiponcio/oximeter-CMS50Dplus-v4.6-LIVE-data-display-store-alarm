@@ -20,4 +20,5 @@ https://www.snip2code.com/Snippet/1802729/Read-live-data-from-a-CMS50D--pulse-ox
 https://github.com/airikka/spo2cms50dplus \
 https://github.com/atbrask/CMS50Dplus
 
-
+For download of the data stored in the oximeter see\
+https://github.com/airikka/spo2cms50dplus
