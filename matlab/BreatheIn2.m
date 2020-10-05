@@ -1,4 +1,5 @@
 function BreatheIn2
+% tested in matlab 2012b
 
 [filename, path]=uigetfile('*.csv'); 
 BreatheInFN=[path, filename]
