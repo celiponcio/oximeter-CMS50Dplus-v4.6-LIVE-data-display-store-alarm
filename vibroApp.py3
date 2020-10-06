@@ -1,11 +1,11 @@
 from __future__ import print_function
-#import android
-from androidhelper import Android
+import android
+# from androidhelper import Android # for qpython3
 import time
 import sys
 import traceback
 
-droid = Android()
+droid = android.Android()
 
 def BtoothCycle():
 	print('Cycling Btooth receiver')
@@ -15,7 +15,8 @@ def BtoothCycle():
 	time.sleep(3)
 
 BtoothCycle()
-droid.wakeLockAcquirePartial
+#droid.wakeLockAcquirePartial
+droid.wakeLockAcquireFull
 
 ID = None;
 while True:
