@@ -18,9 +18,9 @@ class Vibrate(object):
     veto = True
 
     class signal():
-        PR = "500,200,50,0,0"  # too low pulse rate
-        disconnected = '50,200,50,0,0'
-        main_dead = '50,200,50,200,50'  # is issued by vibroApp if it fails to be updated = main is dead
+        PR = '500,200,100,0,0'  # too low pulse rate
+        disconnected = '100,200,100,0,0'
+        main_dead = '100,200,100,200,100'  # is issued by vibroApp if it fails to be updated = main is dead
 
     def __init__(self, MACaddr):
         self.MACaddr = MACaddr
