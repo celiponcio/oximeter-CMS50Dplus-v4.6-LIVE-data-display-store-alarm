@@ -16,9 +16,10 @@ class Vibrate(object):
     _stopping = False
     main_is_alive = True
     veto = True
+    last_vibration_time = time.time()
 
     class signal():
-        PR = '500,200,100,0,0'  # too low pulse rate
+        PR = '200,200,100,0,0'  # too low pulse rate
         disconnected = '100,200,100,0,0'
         main_dead = '100,200,100,200,100'  # is issued by vibroApp if it fails to be updated = main is dead
 
@@ -124,6 +125,7 @@ class Vibrate(object):
                 return False
             if self.verbose > 1: _print("received %s" % data,s==data)
             self._busy = False
+            self.last_vibration_time = time.time()
             return s==data
             #_print([ord(a) for a in s])
             #_print([ord(a) for a in data])

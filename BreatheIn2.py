@@ -30,7 +30,7 @@ from vibrate import Vibrate
 parser = argparse.ArgumentParser(
     description="Download live data from a CMS50D+ oximeter. Store at every heart beat with time.", \
     epilog="Commands: x = alarm off; space = toggle alarm on/pause (pause = 15 minutes); w = test vibration+beep (if alarm on); q or ctrl-c = quit; cvbnm = min SP02-1%; fghjk = min SP02+1%; arrow-up: beginning of the time plot; arrow-down: beginning of the time plot; arrow-left: 1h back in time; arrow-right: 1h forward in time;")
-parser.add_argument('-a', '--alarm_min_SpO2', type=int, help='SpO2 minimal level. Default = 93', default=92,
+parser.add_argument('-a', '--alarm_min_SpO2', type=int, help='SpO2 minimal level. Default = 93', default=93,
                     required=False)
 parser.add_argument('-d', '--device', type=str, help='path to CMS device. Example: /dev/ttyUSB0 (default)',
                     default='/dev/ttyUSB0', required=False)
@@ -51,7 +51,6 @@ alarm_min_PR = 45  # Extra systols! Misses ~half of the heartbeats.
 
 closing = False
 vibrating = [False] * 1
-last_vibration_time = time.time()
 cms, vib, btt, nbc = [None] * 4  # class names to be inited later
 check_cms_disconnection_count = 0
 loop_time = 0
@@ -91,7 +90,7 @@ def handle_close(evt):
 
 def handle_press(event):
     global vib
-    print('press', event.key);
+    print('press', event.key)
     sys.stdout.flush()
     if event.key == "ctrl+c": signal_handler(0, 0)
     proc_key(event.key)
@@ -226,15 +225,26 @@ class plot(object):
             self.SpO2avg1h-90
             )
 	"""
-        s = '%d%s%d%s%s(%1.0f,%1.0f)' % (
-            cms.oldbeat.SpO2,
-            ' :'[self.tic],
-            cms.oldbeat.PR,
-            ' *'[bool(vibrating)],
-            ' "'[bool(cms.oldbeat.lagging)],
-            alarm_min_SpO2,
-            alarm_min_PR
-        )
+        if vib.veto and alarm_flip_time: # alarm veto on
+            s = '%d%s%d%s%s[%1.0f,%1.0f](%d)' % (
+                cms.oldbeat.SpO2,
+                ' :'[self.tic],
+                cms.oldbeat.PR,
+                ' *'[bool(vibrating)],
+                ' "'[bool(cms.oldbeat.lagging)],
+                alarm_min_SpO2,
+                alarm_min_PR,
+                alarm_off_interval - (time.time() - alarm_flip_time))
+        else:
+            s = '%d%s%d%s%s[%1.0f,%1.0f]' % (
+                cms.oldbeat.SpO2,
+                ' :'[self.tic],
+                cms.oldbeat.PR,
+                ' *'[bool(vibrating)],
+                ' "'[bool(cms.oldbeat.lagging)],
+                alarm_min_SpO2,
+                alarm_min_PR)
+
         if cms.oldbeat.SpO2 == 100:       s = 'no data'
         #        if check_cms_disconnection_count: s = 'disconnected'
         if not cms.running():             s = 'disconnected'
@@ -304,8 +314,27 @@ def check_cms_disconnection():
     return True
 
 
+def alarm_off_flip(interval=15*60):
+    global alarm_off_interval, alarm_flip_time
+    alarm_off_interval = interval
+    vib.veto = not vib.veto
+    print("alarm_stop =", vib.veto)
+    alarm_flip_time = time.time()
+
+
 def alarm():
-    global vibrating, last_vibration_time
+    global vibrating, alarm_flip_time
+
+    if vib.veto and alarm_flip_time and \
+            ((time.time() - alarm_flip_time) > alarm_off_interval):
+            alarm_off_flip() # general alarm_off reset (that is, alarm on)
+    if not cms.beat.finger_out:
+        alarm.new_finger_out = False
+    elif not alarm.new_finger_out and not vib.veto and alarm_flip_time and\
+            ((time.time() - vib.last_vibration_time) < 5):
+        alarm.new_finger_out = True
+        alarm_off_flip(60)
+
     if not check_cms_disconnection_count:
         if cms.oldbeat.PR < alarm_min_PR:  # palpitations! priority
             vib.vibrate(vib.signal.PR)
@@ -315,7 +344,6 @@ def alarm():
         vibrate = max([vibrate, 0])
         if vibrate > 0:
             vibrating = True
-            last_vibration_time = time.time()
         else:
             vibrating = False
         s = "%d,0,0,0,0" % vibrate
@@ -323,25 +351,8 @@ def alarm():
         vib.vibrate(s)  # this waits for the vibration to complete
 
 
-def alarm_off_flip(interval=15*60):
-    global alarm_off_interval, alarm_flip_time
-    alarm_off_interval = interval
-    vib.veto = not vib.veto
-    print("alarm_stop =", vib.veto)
-    alarm_flip_time = time.time()
-
-
 def proc_key(key): # runs at every cycle
     global alarm_min_SpO2, alarm_flip_time, vib
-    if vib.veto and alarm_flip_time and \
-            ((time.time() - alarm_flip_time) > alarm_off_interval):
-            alarm_off_flip() # general alarm_off reset (that is, alarm on)
-    if not cms.beat.finger_out:
-        proc_key.new_finger_out = False
-    elif not proc_key.new_finger_out and not vib.veto and alarm_flip_time and\
-            ((time.time() - last_vibration_time) < 5):
-        proc_key.new_finger_out = True
-        alarm_off_flip(10)
     if key == " ": alarm_off_flip(15 * 60)
     if not key: return
     if 'cvbnm'.find(key) >= 0:
@@ -399,7 +410,7 @@ cms.start()
 vib = Vibrate(macAddress)
 vib.verbose = 1
 vib._what_services()
-vib.veto = True;
+vib.veto = True
 alarm_flip_time = None  # start with alarm off. space key is needed to start
 
 # init plot
@@ -430,7 +441,7 @@ while True:
     if closing: break
 
     pl.update(adddata=True)
-    time.sleep(max([1 - (time.time() - now), 0.001]))  # pooling rate. Increase to 2 in slow computers.
+    time.sleep(max([2 - (time.time() - now), 0.001]))  # pooling rate. Increase to 2 in slow computers.
 
     loop_time = time.time() - now
     # print('=',loop_time); sys.stdout.flush()
