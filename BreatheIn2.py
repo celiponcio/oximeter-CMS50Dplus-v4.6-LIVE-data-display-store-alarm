@@ -56,6 +56,8 @@ check_cms_disconnection_count = 0
 loop_time = 0
 alarm_flip_time = None # None = permanent alarm off
 alarm_off_interval = 15*60
+finger_out_alarm_off_interval = 60
+pooling_period = 2 # seconds. Increase to 2 in slow computers.
 
 ###################
 ##### Helpers #####
@@ -68,12 +70,10 @@ def signal_handler(sig, frame):
     print('You pressed Ctrl+C! Please wait.')
     nbc.stop()  # restore normal terminal
     try:
-        global vib
         vib.stop()
     except:
         pass
     try:
-        global cms
         cms.stop()
     except:
         pass
@@ -225,31 +225,25 @@ class plot(object):
             self.SpO2avg1h-90
             )
 	"""
-        if vib.veto and alarm_flip_time: # alarm veto on
-            s = '%d%s%d%s%s[%1.0f,%1.0f](%d)' % (
-                cms.oldbeat.SpO2,
-                ' :'[self.tic],
-                cms.oldbeat.PR,
-                ' *'[bool(vibrating)],
-                ' "'[bool(cms.oldbeat.lagging)],
-                alarm_min_SpO2,
-                alarm_min_PR,
-                alarm_off_interval - (time.time() - alarm_flip_time))
+        if vib.veto and alarm_flip_time: # pausing
+            s_countdown = '(%d)' % (alarm_off_interval - (time.time() - alarm_flip_time))
         else:
-            s = '%d%s%d%s%s[%1.0f,%1.0f]' % (
-                cms.oldbeat.SpO2,
-                ' :'[self.tic],
-                cms.oldbeat.PR,
-                ' *'[bool(vibrating)],
-                ' "'[bool(cms.oldbeat.lagging)],
-                alarm_min_SpO2,
-                alarm_min_PR)
+            s_countdown = ''
+        s = '%d%s%d%s%s[%1.0f,%1.0f]%s' % (
+            cms.oldbeat.SpO2,
+            ' :'[self.tic],
+            cms.oldbeat.PR,
+            ' *'[bool(vibrating)],
+            ' "'[bool(cms.oldbeat.lagging)],
+            alarm_min_SpO2,
+            alarm_min_PR,
+            s_countdown)
 
-        if cms.oldbeat.SpO2 == 100:       s = 'no data'
+        if cms.oldbeat.SpO2 == 100:       s = 'no data ' + s_countdown
         #        if check_cms_disconnection_count: s = 'disconnected'
-        if not cms.running():             s = 'disconnected'
-        if cms.beat.finger_out:           s = 'finger out'
-        if cms.beat.searching:            s = 'searching'
+        if not cms.running():             s = 'disconnected ' + s_countdown
+        if cms.beat.finger_out:           s = 'finger out ' + s_countdown
+        if cms.beat.searching:            s = 'searching ' + s_countdown
         # self.txt_main.set_text('%s%s' % (' :'[self.tic],s))
         self.txt_main.set_text(s)
         # self.txt.set_color('xkcd:sky blue')
@@ -314,7 +308,7 @@ def check_cms_disconnection():
     return True
 
 
-def alarm_off_flip(interval=15*60):
+def alarm_off_flip(interval=alarm_off_interval):
     global alarm_off_interval, alarm_flip_time
     alarm_off_interval = interval
     vib.veto = not vib.veto
@@ -322,19 +316,17 @@ def alarm_off_flip(interval=15*60):
     alarm_flip_time = time.time()
 
 
-def alarm():
-    global vibrating, alarm_flip_time
+def check_finger_off_pause():
+    if cms.beat.finger_out and not vib.veto and alarm_flip_time:
+        alarm_off_flip(finger_out_alarm_off_interval)
 
+
+def alarm():
+    global vibrating
     if vib.veto and alarm_flip_time and \
             ((time.time() - alarm_flip_time) > alarm_off_interval):
             alarm_off_flip() # general alarm_off reset (that is, alarm on)
-    if not cms.beat.finger_out:
-        alarm.new_finger_out = False
-    elif not alarm.new_finger_out and not vib.veto and alarm_flip_time and\
-            ((time.time() - vib.last_vibration_time) < 5):
-        alarm.new_finger_out = True
-        alarm_off_flip(60)
-
+    check_finger_off_pause()
     if not check_cms_disconnection_count:
         if cms.oldbeat.PR < alarm_min_PR:  # palpitations! priority
             vib.vibrate(vib.signal.PR)
@@ -441,7 +433,15 @@ while True:
     if closing: break
 
     pl.update(adddata=True)
-    time.sleep(max([2 - (time.time() - now), 0.001]))  # pooling rate. Increase to 2 in slow computers.
 
+    ####### cycle timing
+    # fast response loop. Can be ommited for slower machines
     loop_time = time.time() - now
-    # print('=',loop_time); sys.stdout.flush()
+    while loop_time < pooling_period - 0.3:
+        time.sleep(0.2)  # short nap and try again
+        check_finger_off_pause()
+        loop_time = time.time() - now
+    # better for slow machines,
+    time.sleep(max([pooling_period - (time.time() - now), 0.001]))
+    loop_time = time.time() - now
+    # print('=',loop_time); sys.stdout.flush() # this is printed in the plot upper right corner

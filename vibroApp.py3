@@ -1,4 +1,4 @@
-from __future__ import print_function
+# from __future__ import print_function # python2
 import android
 # from androidhelper import Android # for qpython3
 import time
@@ -14,9 +14,11 @@ def BtoothCycle():
 	droid.toggleBluetoothState(True,False)
 	time.sleep(3)
 
+print ('do NOT press the POWER button\n(or all the times will get irregular)')
+
 BtoothCycle()
 #droid.wakeLockAcquirePartial
-droid.wakeLockAcquireFull
+#qdroid.wakeLockAcquireFull
 
 ID = None;
 while True:
