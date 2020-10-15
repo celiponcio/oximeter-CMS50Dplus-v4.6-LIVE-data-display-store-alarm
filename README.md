@@ -12,7 +12,7 @@ The present version was tested under Lubuntu 12.04 on Eee PC 4G and under Ubuntu
 
 Optionally the oximeter can be modified to be powered from the data cable to avoid using batteries.
 
-See Instructions.pdf for details.
+See **Instructions.pdf** for details.
 
 
 # ----------------------------------
