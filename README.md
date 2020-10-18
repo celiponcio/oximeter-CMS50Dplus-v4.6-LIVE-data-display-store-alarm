@@ -8,7 +8,7 @@ This was developed to help with idiopathic central sleep apnea. Obviously, it is
 
 Optionally stores in disk at every heartbeat the SpO2 and hearth rate as displayed by the oximeter, the time from the last heartbeat (RR time), max, min and average for the last heartbeat of the two pulse waveforms outputted (probably the red and infrared channels). An example matlab script is provided to read and analyze this information.
 
-The present version was tested under Lubuntu 12.04 on Eee PC 4G and under Ubuntu 18.04 on a modern laptop. The smartphone was under Android Go.
+The present version was tested under Lubuntu 12.04 on Eee PC 4G, on RPI 4B under Raspbian and under Ubuntu 18.04 on a modern laptop. The smartphone was under Android Go.
 
 Optionally the oximeter can be modified to be powered from the data cable to avoid using batteries.
 
